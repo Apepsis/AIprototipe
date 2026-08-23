@@ -1,69 +1,17 @@
 from langchain_community.llms import Ollama
-import chromadb
 
+from core.memory_manager import MemoryManager
 
-# =========================
-# CONEXIÓN CON OLLAMA
-# =========================
 
 llm = Ollama(
     model="llama3.1"
 )
 
-
-# =========================
-# CONEXIÓN CON MEMORIA
-# =========================
-
-client = chromadb.PersistentClient(
-    path="./memory"
-)
-
-collection = client.get_or_create_collection(
-    name="memorias"
-)
+memory = MemoryManager()
 
 
-# =========================
-# GUARDAR MEMORIA
-# =========================
-
-def guardar_memoria(texto):
-
-    cantidad = collection.count()
-
-    collection.add(
-        documents=[texto],
-        ids=[str(cantidad + 1)]
-    )
-
-
-# =========================
-# BUSCAR MEMORIA
-# =========================
-
-def buscar_memoria(pregunta):
-
-    resultado = collection.query(
-        query_texts=[pregunta],
-        n_results=3
-    )
-
-    documentos = resultado.get("documents", [])
-
-    if documentos and documentos[0]:
-        return documentos[0]
-
-    return []
-
-
-# =========================
-# DETECTOR DE MEMORIA
-# =========================
-
-def debe_guardar(texto):
-
-    palabras = [
+def should_remember(text):
+    keywords = [
         "mi nombre",
         "me llamo",
         "mi proyecto",
@@ -74,75 +22,49 @@ def debe_guardar(texto):
         "mi objetivo"
     ]
 
-    texto = texto.lower()
+    text = text.lower()
 
-    for palabra in palabras:
-        if palabra in texto:
-            return True
+    return any(k in text for k in keywords)
 
-    return False
-
-
-
-# =========================
-# AGENTE PRINCIPAL
-# =========================
 
 while True:
 
-    pregunta = input("\nTú: ")
+    question = input("\nTu: ")
 
-
-    if pregunta.lower() == "salir":
+    if question.lower() == "salir":
         break
 
+    memory.add_conversation("user", question)
 
-    # Guardar información importante
+    if should_remember(question):
+        memory.remember(question)
+        print("🧠 Memoria permanente guardada")
 
-    if debe_guardar(pregunta):
+    memories = memory.recall(question)
+    conversation = memory.short_term.get_context()
 
-        guardar_memoria(pregunta)
+    context = ""
 
-        print("🧠 Memoria guardada")
+    if memories:
+        context += f"Memoria permanente del usuario:\n{memories}\n"
 
-
-    # Recuperar recuerdos
-
-    recuerdos = buscar_memoria(pregunta)
-
-
-    contexto = ""
-
-    if recuerdos:
-
-        contexto = f"""
-Estos son recuerdos del usuario:
-
-{recuerdos}
-
-Utilízalos para responder.
-"""
-
-
-    # Prompt final
+    context += f"Conversación actual:\n{conversation}\n"
 
     prompt = f"""
-
 Eres un asistente IA local con memoria.
 
-{contexto}
+Usa este contexto:
 
+{context}
 
-Pregunta del usuario:
+Pregunta:
+{question}
 
-{pregunta}
-
-
-Responde de forma clara.
+Responde claramente.
 """
 
+    answer = llm.invoke(prompt)
 
-    respuesta = llm.invoke(prompt)
+    memory.add_conversation("assistant", answer)
 
-
-    print("\nIA:", respuesta)
+    print("\nIA:", answer)
