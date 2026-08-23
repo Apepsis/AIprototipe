@@ -3,12 +3,8 @@ from langchain_community.llms import Ollama
 from core.memory_manager import MemoryManager
 
 
-# Voice is optional and loaded only when enabled
+# Enable only if microphone assistant mode is required
 ENABLE_VOICE = False
-
-if ENABLE_VOICE:
-    from voice.listener import VoiceListener
-    voice = VoiceListener()
 
 
 llm = Ollama(
@@ -31,7 +27,6 @@ def should_remember(text):
     ]
 
     text = text.lower()
-
     return any(k in text for k in keywords)
 
 
@@ -46,18 +41,13 @@ def process_question(question):
     memories = memory.recall(question)
     conversation = memory.short_term.get_context()
 
-    context = ""
-
-    if memories:
-        context += f"Memoria permanente del usuario:\n{memories}\n"
-
+    context = f"Memoria permanente:\n{memories}\n"
     context += f"Conversación actual:\n{conversation}\n"
 
     prompt = f"""
 Eres Luna, un asistente IA local con memoria.
 
-Usa este contexto:
-
+Contexto:
 {context}
 
 Pregunta:
@@ -73,13 +63,21 @@ Responde claramente.
     return answer
 
 
-while True:
+if __name__ == "__main__":
 
-    question = input("\nTu: ")
+    if ENABLE_VOICE:
+        from voice.background_listener import LunaListener
 
-    if question.lower() == "salir":
-        break
+        luna = LunaListener(process_question)
+        luna.start()
 
-    answer = process_question(question)
+    else:
+        while True:
 
-    print("\nLuna:", answer)
+            question = input("\nTu: ")
+
+            if question.lower() == "salir":
+                break
+
+            answer = process_question(question)
+            print("\nLuna:", answer)
