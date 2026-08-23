@@ -1,3 +1,4 @@
+from router import quick_router
 from tool_router import decide_tool
 
 from langchain_community.llms import Ollama
