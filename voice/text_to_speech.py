@@ -1,13 +1,15 @@
-import subprocess
+"""
+Text to speech abstraction for Luna.
+
+Prepared for Piper TTS integration.
+"""
 
 
 def speak(text):
-    """Basic TTS placeholder.
+    """Speak Luna response.
 
-    Designed to be replaced by Piper TTS or another offline engine.
+    Current version keeps a simple interface.
+    Replace internals with Piper TTS for offline voice output.
     """
 
     print("🔊 Luna:", text)
-
-    # Future integration:
-    # piper --model luna.onnx --output_file voice.wav
