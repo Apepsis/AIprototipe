@@ -3,3 +3,4 @@ sounddevice
 scipy
 openwakeword
 piper-tts
+numpy
