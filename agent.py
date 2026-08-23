@@ -157,14 +157,16 @@ Question:
 # =====================================================
 
 def build_context(question):
+    plan = quick_router(question)
 
+    if plan is None:
 
-    plan = planner(question)
+        print("Usando planner IA...")
+        plan = planner(question)
 
 
     context = ""
-
-
+    context = ""
 
     if ENABLE_MEMORY and plan.get("memory"):
     memories = search_memory(question)
