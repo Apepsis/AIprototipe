@@ -166,10 +166,8 @@ def build_context(question):
 
 
 
-    if plan.get("memory"):
-
-
-        memories = search_memory(question)
+    if ENABLE_MEMORY and plan.get("memory"):
+    memories = search_memory(question)
 
 
         context += f"""
