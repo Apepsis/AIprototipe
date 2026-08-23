@@ -1,6 +1,5 @@
 from tool_router import decide_tool
 from tools.tool_manager import execute_tool
-from voice import listen
 
 from langchain_community.llms import Ollama
 
@@ -263,7 +262,10 @@ while True:
     mode = input("\nModo (texto/voz): ")
 
     if mode.lower() == "voz":
-        question = listen()
+
+    from voice import listen
+
+    question = listen()
         print("USER:", question)
 
     else:
