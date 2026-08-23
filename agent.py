@@ -1,5 +1,4 @@
 from tool_router import decide_tool
-from tools.tool_manager import execute_tool
 
 from langchain_community.llms import Ollama
 
@@ -206,7 +205,7 @@ DOCUMENT KNOWLEDGE:
 
 def process_tool(question):
 
-
+from tools.tool_manager import execute_tool
     decision = decide_tool(question)
 
 
